@@ -60,11 +60,17 @@
 .tc-btn.tc-parry{background:rgba(60,100,200,0.7)}
 .tc-btn.tc-shift{background:rgba(160,60,200,0.7);width:80px;height:50px;font-size:11px}
 .tc-btn.tc-save{background:rgba(200,200,20,0.7);width:80px;height:50px;font-size:11px}
+#fsBtn{position:fixed;bottom:20px;left:20px;z-index:150;font-family:monospace;font-size:13px;font-weight:bold;padding:10px 16px;background:rgba(30,30,30,0.9);color:#fff;border:2px solid #fff;cursor:pointer;border-radius:6px;box-shadow:0 0 0 2px #000;letter-spacing:1px;transition:background .15s}
+#fsBtn:hover{background:#e02020}
+#fsBtn:active{transform:scale(0.97)}
+body.playing #fsBtn{opacity:0.35}
+body.playing #fsBtn:hover{opacity:1}
 #menu.hidden{display:none}
 body:not(.playing) #hud,body:not(.playing) #score,body:not(.playing) #dist,body:not(.playing) #weap,body:not(.playing) #sandboxLabel{opacity:0;transition:opacity .3s}
 body:not(.playing) #banner,body:not(.playing) #bossBar{display:none!important}
 body:not(.playing) #hutPrompt{display:none!important}
 </style></head><body>
+<button id="fsBtn">⛶ ПОЛНЫЙ ЭКРАН</button>
 <canvas id="c"></canvas>
 <div id="bossBar"><div id="bossBarFill"></div><div id="bossBarLabel">WALL OF FLESH</div></div>
 <div id="hud"><div id="row"><div id="fc"><div id="cap"></div><div id="brim"></div><div id="hair"></div><div id="e1"></div><div id="e2"></div><div id="mouth"></div></div><div id="hb"><div id="hf"></div><div id="ht">100/100</div></div></div></div>
@@ -226,6 +232,23 @@ document.getElementById('menuBtn').onclick=()=>{started=false;sandboxMode=false;
 document.getElementById('saveYes').onclick=()=>{dSave();hideSave();};
 document.getElementById('saveNo').onclick=()=>{hideSave();};
 document.getElementById('spawnClose').onclick=()=>{toggleSpawnMenu();};
+document.getElementById('fsBtn').onclick=()=>{
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    const el=document.documentElement;
+    const req=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(req)req.call(el).catch(e=>console.warn('FS fail',e));
+  } else {
+    const exit=document.exitFullscreen||document.webkitExitFullscreen;
+    if(exit)exit.call(document).catch(e=>console.warn('FS exit fail',e));
+  }
+};
+const fsUpdate=()=>{
+  const btn=document.getElementById('fsBtn');
+  const isFS=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  btn.textContent=isFS?'⛶ ВЫЙТИ':'⛶ ПОЛНЫЙ ЭКРАН';
+};
+document.addEventListener('fullscreenchange',fsUpdate);
+document.addEventListener('webkitfullscreenchange',fsUpdate);
 document.querySelectorAll('#spawnMenu button[data-spawn]').forEach(btn=>{btn.onclick=()=>spawnAt(btn.dataset.spawn);});
 document.querySelectorAll('#touchControls button').forEach(btn=>{const key=btn.dataset.key;if(!key)return;
   const down=(e)=>{e.preventDefault();K[key]=true;if(key==='KeyZ')jp();else if(key==='KeyX')atk();else if(key==='KeyC')par();else if(key==='ShiftLeft')sh=true;else if(key==='KeyE'&&hutTarget!==null){savedHutX=hutTarget;hutTarget=null;document.getElementById('hutPrompt').style.display='none';showSave();}};
